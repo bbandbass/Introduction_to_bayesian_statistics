@@ -1,0 +1,314 @@
+---
+title: "STAT404_HW1_2017150431"
+author: "CWY"
+date: '2022-10-15'
+output: pdf_document
+---
+
+
+# 1-(a) # 3.1
+## b)
+```{r}
+theta = seq(0, 1, 0.1)
+prob = choose(100, 57) * (theta^57) * (1 - theta)^(100 - 57)
+plot(theta, prob, type = 'h', main = 'Pr(Y = 57|theta)')
+```
+
+## c)
+```{r}
+prior = 1/11
+theta = seq(0, 1, 0.1)
+likelihood = choose(100, 57) * (theta^57) * (1 - theta)^(100 - 57)
+posterior = likelihood * prior
+posterior = posterior/sum(posterior)
+plot(theta, posterior, type = 'h', main = 'Pr(theta|Y = 57)')
+```
+
+## d)
+```{r}
+prior = 1
+theta = seq(0, 1, length = 300)
+likelihood = choose(100, 57) * (theta^57) * (1 - theta)^(100 - 57)
+posterior = likelihood * prior
+posterior = posterior/sum(posterior)
+plot(theta, posterior, type = 'l', main = 'Pr(theta|Y = 57)')
+```
+
+## e)
+```{r}
+theta = seq(0, 1, length = 300)
+posterior = dbeta(theta, 1 + 57, 1 + 100 - 57)
+posterior = posterior/sum(posterior)
+plot(theta, posterior, type = 'l', main = 'Posterior distribution of theta')
+```
+The plot from the exact Beta Distribution is almost identical with the plot drawn
+from (d), where the posterior mode being a value slightly smaller that 0.6. (c) with 
+discrete prior did a pretty good job as well but the posterior estimate for theta was
+exactly 0.6 in (c) where we found out that the actual value must be slightly smaller that 0.6.
+Also by looking at (b) the result seems quiet reasonable.
+
+# 1-(b) # 3.2
+```{r}
+theta_0 = seq(0.1, 0.9, 0.1)
+n_0 = c(1, 2, 8, 16, 32)
+
+theta_0 = rep(theta_0, each = 5)
+n_0 = rep(n_0, times = 9)
+a = theta_0 * n_0
+b = (1 - theta_0) * n_0
+df = data.frame(theta_0, n_0, a, b)
+print(df)
+
+n = 100; x = 57
+pr = numeric()
+for (i in 1:nrow(df)){
+  pr[i] = 1 - pbeta(0.5, x + df$a[i], n - x + df$b[i])
+}
+
+theta_0 = seq(0.1, 0.9, 0.1)
+n_0 = c(1, 2, 8, 16, 32)
+pr = matrix(pr, nrow = length(theta_0), byrow = T)
+contour(n_0, theta_0, t(pr), levels=c(0.1,0.3,0.5,0.7,0.9,0.975))
+```
+This plot can be used to explain to someone to believe that theta is over 0.5 based on the given data, we can see that even with
+lower prior belief are generally 90% or more certain that the theta is over 0.5. Those with high prior belief are very highly certain(97.5%) that theta is over 0.5.
+
+
+# 1-(c) # 3.4
+## a)
+```{r}
+n = 43; y = 15
+a = 2; b = 8
+theta = seq(0, 1, 0.01)
+prior = dbeta(theta, a, b); prior = prior/sum(prior)
+likelihood = dbinom(y, n, theta); likelihood = likelihood/sum(likelihood)
+posterior = dbeta(theta, a + y, b + n - y); posterior = posterior/sum(posterior)
+plot(theta, prior, type = 'l', main = 'Prior')
+plot(theta, likelihood, type = 'l', main = 'Likelihood')
+plot(theta, posterior, type  = 'l', main = 'Posterior')
+cat("posterior mean of theta is", (a + y)/(a + b + n))
+cat("\nposterior mode of theta is", 
+theta[which.max(posterior)])
+cat("\nposterior sd of theta is", sqrt(((a + y) * (b + n - y))/(((a + b + n)^2) * (a + b+ n + 1))))
+cat("\n95% quantile-based confidence interval is", qbeta(c(0.025, 0.975), a + y, b + n - y))
+```
+
+## b)
+```{r}
+n = 43; y = 15
+a = 8; b = 2
+theta = seq(0, 1, 0.01)
+prior = dbeta(theta, a, b); prior = prior/sum(prior)
+likelihood = dbinom(y, n, theta); likelihood = likelihood/sum(likelihood)
+posterior = dbeta(theta, a + y, b + n - y); posterior = posterior/sum(posterior)
+plot(theta, prior, type = 'l', main = 'Prior')
+plot(theta, likelihood, type = 'l', main = 'Likelihood')
+plot(theta, posterior, type  = 'l', main = 'Posterior')
+cat("posterior mean of theta is", (a + y)/(a + b + n))
+cat("\nposterior mode of theta is", 
+theta[which.max(posterior)])
+cat("\nposterior sd of theta is", sqrt(((a + y) * (b + n - y))/(((a + b + n)^2) * (a + b+ n + 1))))
+cat("\n95% quantile-based confidence interval is", qbeta(c(0.025, 0.975), a + y, b + n - y))
+```
+
+## c)
+```{r}
+theta = seq(0, 1, 0.01)
+prior = (1/4) * (gamma(10)/(gamma(2) * gamma(8))) * (3 * theta * (1 - theta)^7 + theta^7 * (1 - theta))
+prior = prior/sum(prior)
+prior.a = dbeta(theta, 2, 8); prior.b = dbeta(theta, 8, 2)
+prior.a = prior.a/sum(prior.a); prior.b = prior.b/sum(prior.b)
+plot(theta, prior, type = 'l', main = 'Prior distribution of (c)')
+plot(theta, prior.a, type = 'l', main = 'Prior distribution of (a)')
+plot(theta, prior.b, type = 'l', main = 'Prior distribution of (b)')
+```
+The distribution has two local maximum point unlike the prior distributions from a) or b).
+And the two points are identical with the points from a) and b) which is because it is the 
+mixture of a beta(2, 8) and beta(8, 2) prior distribution as it is described. The prior opinion
+maybe that the probability that a particular event will occur is either high or low, 
+but it is more likely to be low.
+
+## d)
+### iii.
+```{r}
+theta = seq(0, 1, length = 300)
+posterior = 18 * choose(43, 15) * (3 * (theta^16) * ((1 - theta)^35) + (theta^22) * ((1 - theta)^29))
+posterior = posterior/sum(posterior)
+plot(theta, posterior, type = 'l', main = 'p(theta) x p(y|theta)')
+cat("\nposterior mode of theta is", 
+theta[which.max(posterior)])
+```
+The posterior mode is between the posterior mode of (a) = 0.31 and (b) = 0.43 but is 
+much closer to the posterior mode of (a).
+
+# 1-(e) # 3.10
+## a)
+```{r}
+theta = seq(0, 1, length = 300)
+psi = log(theta/(1 - theta))
+p_psi = (1/beta(1, 1)) * exp(-psi)/(1 + exp(-psi))^2
+plot(psi, p_psi, type = 'l', main = 'P(psi)')
+```
+
+# 2
+## (a)
+```{r}
+set.seed(1); n = 10^4
+
+pmf = c(0.45, 0.55)
+
+rng.discrete = function(pmf){
+  repeat{y = rbinom(1, 1, prob = 0.5) ; v = runif(1)
+if (v < pmf[y + 1]/max(pmf))
+break}
+return(floor(y))}
+
+rng.Y = replicate(n, rng.discrete(pmf))
+table(rng.Y)/n
+```
+The empirical marginal p.m.f of Y based on random numbers are 0.4562 for Y = 0 and 0.5438 for Y = 1,
+where the exact marginal p.m.f of Y are 0.45 for Y = 0 and 0.5 for Y = 1. It is pretty well matched.
+
+## (b)
+```{r}
+set.seed(1); n = 10^4
+
+n = 10^4
+jointpmf = matrix(c(0.15, 0.15, 0.15, 0.15, 0.2, 0.2), 2, 3, byrow = T)
+dimnames(jointpmf)[[1]] = 0:1; dimnames(jointpmf)[[2]] = 0:2
+cat("Joint Pmf\n")
+jointpmf
+cat("\n")
+rng.comp = function(jointp, nsim){
+ jointsamp = matrix(0, nsim, 2);
+  for (k in 1:nsim){
+    ypmf = apply(jointp, 1, sum) #marginal_dist P(Y)
+    y = sample(0:1, 1, prob = ypmf, replace = T)
+    x = sample(0:2, 1, prob = jointp[(y + 1), ]/ypmf[(y + 1)], replace = T)# P(X, Y)
+    jointsamp[k,] = c(x, y)}
+  return(jointsamp)}
+
+
+xy.rng = data.frame(rng.comp(jointpmf, n))
+names(xy.rng) = c("X", "Y"); table(xy.rng)/n
+cat("\nP(X = x)\n")
+apply(table(xy.rng)/n, 1, sum)
+```
+The empirical marginal p.m.f of X based on random numbers are 0.3031 for X = 0,
+0.3480 for X = 1 and 0.3489 for X = 2. The actual values of P(X = x) are 0.3, 0.35, 0.35 for each. It is pretty well matched.
+
+## (c)
+
+```{r}
+set.seed(1); n = 10^4
+
+trans.mat = function(A) {
+  n = length(A[,1]); temp = A
+  for (i in 1:n){temp[i,] = A[i,]/sum(A[i,])}
+  return(temp)
+}
+
+gibbs_discrete = function(pmat1, pmat2, i = 1, iter){
+  jointsamp = matrix(0, iter, 2)
+  for (k in 1:iter){
+    j = sample(0:2, 1, prob = pmat1[(i + 1),])
+    i = sample(0:1, 1, prob = pmat2[(j + 1),])
+    jointsamp[k,] = c(i, j)}
+  return(jointsamp)
+}
+
+
+Pmat.YX = trans.mat(jointpmf); Pmat.XY = trans.mat(t(jointpmf))
+nburnin = 2000; niter = nburnin + n
+gibbs_samp = data.frame(gibbs_discrete(Pmat.YX, Pmat.XY, 1, niter))
+names(gibbs_samp) = c("Y", "X")
+X.Y = table(gibbs_samp[(nburnin+1):(niter), ])/n
+colnames(X.Y) = c(0, 1, 2)
+rownames(X.Y) = c(0, 1)
+cat('P(X=x, Y = y)\n')
+X.Y
+
+
+powermat = function(mat, k){
+  if (k == 0) return (diag(dim(mat)[1]))
+  if (k == 1) return(mat)
+  if (k > 1)  return(mat %*% powermat(mat, k-1))
+}
+
+
+Pmat.Y <- Pmat.YX %*% Pmat.XY 
+Pmat.X <- Pmat.XY %*% Pmat.YX 
+
+cat('\nP(X=x)\n')
+powermat(Pmat.X, 100)
+cat('\nP(Y=y)\n')
+powermat(Pmat.Y, 100)
+```
+The estimates for P(X = x, Y  = y) are 0.1498 for X = 0, Y = 0, 0.1533 for X = 1, Y = 0, 0.1534 for X = 2, Y = 0, 0.1457 for X = 0, Y = 1, 0.2001 for X = 1, Y = 1 and 0.1977 for X = 2, Y = 1. The actual values are 0.15, 0.15, 0.15, 0.15, 0.20, 0.20 for each. It is pretty well matched. The estimates for P(X = x) are 0.30 for X = 0, 0.35 for X = 1 and 0.35 for X = 2. The actual values of P(X = x) are 0.3, 0.35, 0.35 for each. It is exactly the same. The estimates for P(Y = y) are 0.45 for Y = 0, 0.55 for Y = 1. The actual values of P(Y = y) are 0.45, 0.55 for each. It is also exactly the same.
+
+# 3
+## (b)
+```{r}
+set.seed(42)
+n = 1000; x = 710
+theta = seq(0, 1, length = n)
+posterior.A = dbeta(theta, 712, 291)
+posterior.A = posterior.A/sum(posterior.A)
+cat("Using grid approximation,\n")
+sum(posterior.A[theta < 0.4])
+cat('Using Monte Carlo Approximation,\n')
+posterior.B = rbeta(1000, 712, 291)
+mean(posterior.B < 0.4)
+cat("\n Exact value using pbeta()\n")
+pbeta(0.4, 712, 291)
+```
+The probability that theta is less than 0.4 based on the given prior pdf are all
+zero(approximately) regardless of the method used.
+
+## (c)
+```{r}
+n = 1000; set.seed(1)
+thetasamp = rbeta(n, 713, 291)
+log_odds = log(thetasamp / (1-thetasamp))
+hist(log_odds, breaks=25, main="Posterior density",freq=F)
+lines(density(log_odds))
+```
+
+## (d)
+```{r}
+set.seed(1)
+a.A = 712; b.A = 291; a.B = 713; b.B = 291
+n = 1000; x = 710
+
+loss_func = function(theta, delta){
+  if (delta < theta){
+    return((theta - delta)^2)} else{
+    return(2 * (theta - delta)^2)
+    }
+  }
+
+posterior_exploss = function(delta, S = 10000){
+  theta = rbeta(S, a.A + x, b.A + n - x)
+  loss = apply(as.matrix(theta), 1, loss_func, delta)
+  risk = mean(loss)
+}
+
+delta = seq(0, 1, length = 1000)
+post_exploss_A = apply(as.matrix(delta), 1, posterior_exploss)
+plot(delta, post_exploss_A, type = "l", main ="posterior expected loss of A")
+
+
+posterior_exploss = function(delta, S = 10000, a, b){
+  theta = rbeta(S, a.B + x, b.B + n - x)
+  loss = apply(as.matrix(theta), 1, loss_func, delta)
+  risk = mean(loss)
+}
+
+post_exploss_B = apply(as.matrix(delta), 1, posterior_exploss)
+plot(delta, post_exploss_B, type = "l", main ="posterior expected loss of B")
+
+round(delta[which.min(post_exploss_A)], 2)
+round(delta[which.min(post_exploss_B)], 2)
+```
+
+The bayes estimates for the two statisticians are the same.
